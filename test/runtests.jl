@@ -1,6 +1,5 @@
-using ACTR_SFT
-using Test
+using SafeTestsets
 
-@testset "ACTR_SFT.jl" begin
-    # Write your tests here.
-end
+files = filter(f -> (f ≠ "runtests.jl") && (f ≠ "plot_test"), readdir())
+
+include.(files)

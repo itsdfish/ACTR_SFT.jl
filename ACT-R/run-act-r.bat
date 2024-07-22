@@ -1,0 +1,1 @@
+start "ACT-R" apps/act-r.exe  -n -l "set-logical.lisp" -e "(load-patch-files)" -e "(init-des)" -e "(echo-act-r-output)" -e "(load-user-files)" -e "(mp-print-versions)"  -e "(run-environment)"

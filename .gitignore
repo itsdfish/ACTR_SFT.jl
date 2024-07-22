@@ -1,1 +1,4 @@
 /Manifest.toml
+*.csv
+*.eps
+*.png
