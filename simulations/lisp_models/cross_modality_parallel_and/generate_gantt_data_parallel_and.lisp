@@ -20,4 +20,4 @@ run the following in the terminal:
 
 (setf rt (run-trial 'present-stimuli-cross-modality "L" 1000 parms :track-history t))
 (setf module-data (process-history-data "module-demand-times"))
-(write-string-to-file module-data "../simulation_output/gantt_plot_data/cross_modal_parallel_gantt_data.json")
+(write-string-to-file module-data "../simulation_output/gantt_plot_data/cross_modal_parallel_and_gantt_data.json")

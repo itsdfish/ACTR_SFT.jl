@@ -1,18 +1,18 @@
 """
-    simulate_experiment(model::SFTACTR, run_experiment, rule, stimuli, n_sim)
+    simulate_experiment(model::SFTModel, run_experiment, rule, stimuli, n_sim)
 
 Simulates a double factorial experiment for a given model, response rule, and experiment. The function factorially manipulates the stimuli
 to create n_stimuli by n_stimuli conditions. 
 
 # Arguments 
 
-- `model::SFTACTR`: an ACT-R model designed for a double factorial experiment 
+- `model::SFTModel`: a model designed for a double factorial experiment 
 - `run_experiment`: an function for running a double factorial experiment, which expects (model, rule, stimulus1, stimulus2) 
 - `rule`: a response rule
 - `stimuli`: a collection of stimulus levels. Elements are expected to be symbols 
 - `n_sim`: number of simulated responses per condition
 """
-function simulate_experiment(model::SFTACTR, run_experiment, rule, stimuli, n_sim)
+function simulate_experiment(model::SFTModel, run_experiment, rule, stimuli, n_sim)
     n_cond = length(stimuli)^2
     rts = fill(0.0, n_sim * n_cond)
     stimulus1 = fill(:_, n_sim * n_cond)
@@ -20,6 +20,21 @@ function simulate_experiment(model::SFTACTR, run_experiment, rule, stimuli, n_si
     cnt = 1
     for s1 ∈ stimuli, s2 ∈ stimuli, _ ∈ 1:n_sim
         rts[cnt] = run_experiment(model, rule, s1, s2)
+        stimulus1[cnt] = s1
+        stimulus2[cnt] = s2
+        cnt += 1
+    end
+    return (; stimulus1, stimulus2, rts)
+end
+
+function simulate_experiment(model::SFTModel, run_experiment, stimuli, n_sim)
+    n_cond = length(stimuli)^2
+    rts = fill(0.0, n_sim * n_cond)
+    stimulus1 = fill(:_, n_sim * n_cond)
+    stimulus2 = fill(:_, n_sim * n_cond)
+    cnt = 1
+    for s1 ∈ stimuli, s2 ∈ stimuli, _ ∈ 1:n_sim
+        rts[cnt] = run_experiment(model, s1, s2)
         stimulus1[cnt] = s1
         stimulus2[cnt] = s2
         cnt += 1
@@ -222,6 +237,25 @@ function simulate_cmdf(model::ParallelACTR, ::Type{<:OR}, stimulus1, stimulus2)
     μ = stimulus1 ≠ :absent ? μv1 : μa1
     return rand_time(dist, μcr) + rand_time(dist, μ) + rand_time(dist, μcr) +
            rand_time(dist, μm)
+end
+
+function simulate_imdf(model::Coactive, stimulus1, stimulus2)
+    (; ν, α, τ, Δ) = model
+    μv1 = manipulate_salience(stimulus1, ν, Δ)
+    μv2 = manipulate_salience(stimulus2, ν, Δ)
+    μv12 = μv1 + μv2
+
+    # both stimuli present 
+    if (stimulus1 ≠ :absent) && (stimulus2 ≠ :absent)
+        return rand(Wald(μv12, α, τ))
+    end
+    # both stimuli absent 
+    if (stimulus1 == :absent) && (stimulus2 == :absent)
+        return rand(Wald(μv12, α, τ))
+    end
+    # one stimulus present, one absent 
+    _μv = stimulus1 ≠ :absent ? μv1 : μv2
+    return rand(Wald(_μv, α, τ))
 end
 
 manipulate_salience(stimulus, μ, Δ) = stimulus == :H ? μ - Δ : stimulus == :L ? μ + Δ : μ

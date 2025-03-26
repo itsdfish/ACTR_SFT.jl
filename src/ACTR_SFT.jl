@@ -4,11 +4,13 @@ using Distributions
 using JSON
 using Plots
 
+using SequentialSamplingModels: Wald
 using StatsBase: ecdf
 
 export AND
 export OR
 export Fixed
+export Coactive
 export ParallelACTR
 export SerialACTR
 
